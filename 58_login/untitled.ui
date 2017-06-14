@@ -74,30 +74,17 @@
      <x>760</x>
      <y>110</y>
      <width>241</width>
-     <height>161</height>
+     <height>251</height>
     </rect>
    </property>
    <property name="title">
     <string>GroupBox</string>
    </property>
-   <widget class="QLabel" name="label_5">
+   <widget class="QLineEdit" name="address">
     <property name="geometry">
      <rect>
       <x>20</x>
       <y>70</y>
-      <width>81</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>data5u订单号</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="order">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>100</y>
       <width>113</width>
       <height>20</height>
      </rect>
@@ -114,6 +101,26 @@
     </property>
     <property name="text">
      <string>使用代理</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="username">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>120</y>
+      <width>113</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="password">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>180</y>
+      <width>113</width>
+      <height>20</height>
+     </rect>
     </property>
    </widget>
   </widget>

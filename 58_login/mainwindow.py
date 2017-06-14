@@ -29,7 +29,12 @@ class MainWindow(QtGui.QDialog):
         self.ip_lock=ReadWriteLock()
         self.dirty=False
         self.pid=None
+        self.address=self.ui.address.text().__str__()
+        self.username = self.ui.username.text().__str__()
+        self.password = self.ui.password.text().__str__()
         threading.Thread(target=self.change_ip).start()
+        for i in range(1):
+            threading.Thread(target=self.login_thread).start()
 
         # self.encrpy=vvv8.Enerypt_58()
 
@@ -40,9 +45,10 @@ class MainWindow(QtGui.QDialog):
             time.sleep(1)
         threading.Thread(target=self.start1).start()
 
+
     def start1(self):
 
-        pool=threadpool.ThreadPool(10)
+        # pool=threadpool.ThreadPool(10)
 
         # if self.ui.checkBox.checkState() == 2:
         #     order=self.ui.order.text().__str__()
@@ -51,11 +57,13 @@ class MainWindow(QtGui.QDialog):
         #     self.apiUrl=None
 
         self.new_pwd=self.ui.lineEdit_6.text().__str__()
+        for i in range(self.ui.tableWidget.rowCount()):
+            self.queue.put(i)
         # for i in range(self.ui.tableWidget.rowCount()):
         # threading.Thread(target=self.get_ip).start()
-        reqs = threadpool.makeRequests(self.logining, range(self.ui.tableWidget.rowCount()))
-        [pool.putRequest(req) for req in reqs]
-        pool.wait()
+        # reqs = threadpool.makeRequests(self.logining, range(self.ui.tableWidget.rowCount()))
+        # [pool.putRequest(req) for req in reqs]
+        # pool.wait()
 
     # def get_ip(self):
     #     while self.apiUrl:
@@ -75,8 +83,8 @@ class MainWindow(QtGui.QDialog):
                 if self.pid is not None:
                     win32ras.HangUp(self.pid)
                     time.sleep(3)
-                self.pid, ret = win32ras.Dial(None, None, ('vpn', 'zzzh.8866.org', "", 'q1425', '6', ""), None)
-
+                self.pid, ret = win32ras.Dial(None, None, ('vpn', self.address, "", self.username, self.password, ""), None)
+                print self.pid,ret
                 # if ret==0:
                     # QtGui.QMessageBox.information(self, u"连接", u'连接vpn')
                 # else
@@ -86,6 +94,11 @@ class MainWindow(QtGui.QDialog):
 
             time.sleep(1)
 
+    def login_thread(self):
+        while True:
+
+            i=self.queue.get()
+            self.logining(i)
 
 
     def logining(self,i):
@@ -93,6 +106,7 @@ class MainWindow(QtGui.QDialog):
             time.sleep(1)
         self.ip_lock.acquire_read()
         try:
+            # i=self.queue.get()
             account=self.ui.tableWidget.item(i,0).text().__str__()
             password = self.ui.tableWidget.item(i, 1).text().__str__()
             print account,password
@@ -149,7 +163,7 @@ class MainWindow(QtGui.QDialog):
                     self.dirty = True
                     self.ip_lock.release_read()
                     # self.ui.tableWidget.setItem(i, 2, QtGui.QTableWidgetItem(login_re["msg"]))
-                    self.logining(i)
+                    self.queue.put(i)
                     return
                 self.ui.tableWidget.setItem(i,2,QtGui.QTableWidgetItem(login_re["msg"]))
         finally:

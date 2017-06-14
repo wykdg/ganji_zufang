@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'untitled.ui'
 #
-# Created: Mon Jun 12 15:33:49 2017
+# Created: Wed Jun 14 17:18:04 2017
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -51,17 +51,20 @@ class Ui_Dialog(object):
         item = QtGui.QTableWidgetItem()
         self.tableWidget.setHorizontalHeaderItem(8, item)
         self.groupBox = QtGui.QGroupBox(Dialog)
-        self.groupBox.setGeometry(QtCore.QRect(760, 110, 241, 161))
+        self.groupBox.setGeometry(QtCore.QRect(760, 110, 241, 251))
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
-        self.label_5 = QtGui.QLabel(self.groupBox)
-        self.label_5.setGeometry(QtCore.QRect(20, 70, 81, 16))
-        self.label_5.setObjectName(_fromUtf8("label_5"))
-        self.order = QtGui.QLineEdit(self.groupBox)
-        self.order.setGeometry(QtCore.QRect(20, 100, 113, 20))
-        self.order.setObjectName(_fromUtf8("order"))
+        self.address = QtGui.QLineEdit(self.groupBox)
+        self.address.setGeometry(QtCore.QRect(20, 70, 113, 20))
+        self.address.setObjectName(_fromUtf8("address"))
         self.checkBox = QtGui.QCheckBox(self.groupBox)
         self.checkBox.setGeometry(QtCore.QRect(20, 20, 71, 16))
         self.checkBox.setObjectName(_fromUtf8("checkBox"))
+        self.username = QtGui.QLineEdit(self.groupBox)
+        self.username.setGeometry(QtCore.QRect(20, 120, 113, 20))
+        self.username.setObjectName(_fromUtf8("username"))
+        self.password = QtGui.QLineEdit(self.groupBox)
+        self.password.setGeometry(QtCore.QRect(20, 180, 113, 20))
+        self.password.setObjectName(_fromUtf8("password"))
         self.input = QtGui.QPushButton(Dialog)
         self.input.setGeometry(QtCore.QRect(420, 610, 75, 23))
         self.input.setObjectName(_fromUtf8("input"))
@@ -108,7 +111,6 @@ class Ui_Dialog(object):
         item = self.tableWidget.horizontalHeaderItem(8)
         item.setText(_translate("Dialog", "改密码", None))
         self.groupBox.setTitle(_translate("Dialog", "GroupBox", None))
-        self.label_5.setText(_translate("Dialog", "data5u订单号", None))
         self.checkBox.setText(_translate("Dialog", "使用代理", None))
         self.input.setText(_translate("Dialog", "导入", None))
         self.output.setText(_translate("Dialog", "导出", None))
