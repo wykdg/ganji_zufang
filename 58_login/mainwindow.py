@@ -11,7 +11,7 @@ import check_proxy
 import threading
 import Queue
 import time
-
+from rwlock import ReadWriteLock
 class MainWindow(QtGui.QDialog):
 
     def __init__(self,parent=None):
@@ -26,16 +26,24 @@ class MainWindow(QtGui.QDialog):
         self.ui.start.clicked.connect(self.start)
         self.ui.stop.clicked.connect(self.stop)
         self.queue=Queue.Queue()
-        self.ip_lock=threading.Lock()
+        self.ip_lock=ReadWriteLock()
+        self.dirty=False
         self.pid=None
+        threading.Thread(target=self.change_ip).start()
+
         # self.encrpy=vvv8.Enerypt_58()
 
     @QtCore.pyqtSlot()
     def start(self):
+        self.dirty = True
+        while self.dirty is True:
+            time.sleep(1)
         threading.Thread(target=self.start1).start()
+
     def start1(self):
 
-        pool=threadpool.ThreadPool(21)
+        pool=threadpool.ThreadPool(10)
+
         # if self.ui.checkBox.checkState() == 2:
         #     order=self.ui.order.text().__str__()
         #     self.apiUrl = "http://api.ip.data5u.com/dynamic/get.html?order=" + order
@@ -62,83 +70,90 @@ class MainWindow(QtGui.QDialog):
 
     def change_ip(self):
         while True:
-            if self.change is True:
-                self.ip_lock.acquire()
+            if self.dirty is True:
+                self.ip_lock.acquire_write()
+                if self.pid is not None:
+                    win32ras.HangUp(self.pid)
+                    time.sleep(3)
+                self.pid, ret = win32ras.Dial(None, None, ('vpn', 'zzzh.8866.org', "", 'q1425', '6', ""), None)
+
+                # if ret==0:
+                    # QtGui.QMessageBox.information(self, u"连接", u'连接vpn')
+                # else
+                #     QtGui.QMessageBox.information(self, u"连接", u'连接vpn错误')
+                self.dirty=False
+                self.ip_lock.release_write()
+
+            time.sleep(1)
+
 
 
     def logining(self,i):
-        account=self.ui.tableWidget.item(i,0).text().__str__()
-        password = self.ui.tableWidget.item(i, 1).text().__str__()
-        print account,password
-        # time.sleep(5)
-        proxy = None
-        if self.pid is None:
-            self.pid,ret=win32ras.Dial(None, None, ('vpn', 'zzzh.8866.org', "", 'a1365', '1', ""), None)
-            print self.pid
-
-        # if self.apiUrl:
-        #     proxy=self.queue.get()
-
-        # if proxy is None:
-        #
-        #     while self.apiUrl:
-        #         res = urllib.urlopen(self.apiUrl).read().strip("\n")
-        #         # 按照\n分割获取到的IP
-        #         ips = res.split("\n")
-        #         # 随机选择一个IP
-        #         proxy = ips[0]
-        #         if check_proxy.proxy_check(proxy) is True:
-        #             break
+        while self.dirty is True:
+            time.sleep(1)
+        self.ip_lock.acquire_read()
         try:
-            a=Login_58(account,password,proxy=proxy)
-            login_re=a.login()
-            if login_re['code']in (0,1,3):
-                self.queue.put(proxy)
-        except:
-            login_re={'code':2}
-        if login_re['code'] is 0:
-            self.ui.tableWidget.setItem(i,2,QtGui.QTableWidgetItem(u"登录成功"))
-
-            auth=a.get_auth()
-            if auth:
-                if auth[3] is True:
-                    self.ui.tableWidget.setItem(i,6,QtGui.QTableWidgetItem(u"已认证"))
-                else:
-                    self.ui.tableWidget.setItem(i, 6, QtGui.QTableWidgetItem(u"未认证"))
-
-                if auth[0] is True:
-                    self.ui.tableWidget.setItem(i,3,QtGui.QTableWidgetItem(u"已认证"))
-                else:
-                    self.ui.tableWidget.setItem(i, 3, QtGui.QTableWidgetItem(u"未认证"))
-
-                if auth[2] is True:
-                    self.ui.tableWidget.setItem(i,4,QtGui.QTableWidgetItem(u"已认证"))
-                else:
-                    self.ui.tableWidget.setItem(i, 4, QtGui.QTableWidgetItem(u"未认证"))
-
-                if (auth[100] and auth[500] and auth[501]) is True:
-                    self.ui.tableWidget.setItem(i,5,QtGui.QTableWidgetItem(u"已认证"))
-                else:
-                    self.ui.tableWidget.setItem(i, 5, QtGui.QTableWidgetItem(u"未认证"))
+            account=self.ui.tableWidget.item(i,0).text().__str__()
+            password = self.ui.tableWidget.item(i, 1).text().__str__()
+            print account,password
+            # time.sleep(5)
 
 
-            print auth
-            money=a.get_money()
-            if money:
-                self.ui.tableWidget.setItem(i, 7, QtGui.QTableWidgetItem(str(money)))
-            if self.new_pwd:
-                pwd_modify=a.modify_password(self.new_pwd)
-                if pwd_modify is True:
-                    self.ui.tableWidget.setItem(i, 8, QtGui.QTableWidgetItem(u"修改密码成功"))
-                else:
-                    self.ui.tableWidget.setItem(i, 8, QtGui.QTableWidgetItem(pwd_modify))
-        else:
-            if login_re["code"]==2 :
-                win32ras.HangUp(self.pid)
-                self.pid=None
-                self.logining(i)
-            self.ui.tableWidget.setItem(i,2,QtGui.QTableWidgetItem(login_re["msg"]))
+            try:
+                a=Login_58(account,password)
+                login_re=a.login()
+                # if login_re['code']in (0,1,3):
+                    # self.queue.put(proxy)
+            except:
+                # self.logining(i)
+                # return
+                login_re={'code':2,"msg":"u连接错误"}
+            if login_re['code'] is 0:
+                self.ui.tableWidget.setItem(i,2,QtGui.QTableWidgetItem(u"登录成功"))
 
+                auth=a.get_auth()
+                if auth:
+                    if auth[3] is True:
+                        self.ui.tableWidget.setItem(i,6,QtGui.QTableWidgetItem(u"已认证"))
+                    else:
+                        self.ui.tableWidget.setItem(i, 6, QtGui.QTableWidgetItem(u"未认证"))
+
+                    if auth[0] is True:
+                        self.ui.tableWidget.setItem(i,3,QtGui.QTableWidgetItem(u"已认证"))
+                    else:
+                        self.ui.tableWidget.setItem(i, 3, QtGui.QTableWidgetItem(u"未认证"))
+
+                    if auth[2] is True:
+                        self.ui.tableWidget.setItem(i,4,QtGui.QTableWidgetItem(u"已认证"))
+                    else:
+                        self.ui.tableWidget.setItem(i, 4, QtGui.QTableWidgetItem(u"未认证"))
+
+                    if (auth[100] and auth[500] and auth[501]) is True:
+                        self.ui.tableWidget.setItem(i,5,QtGui.QTableWidgetItem(u"已认证"))
+                    else:
+                        self.ui.tableWidget.setItem(i, 5, QtGui.QTableWidgetItem(u"未认证"))
+
+
+                print auth
+                money=a.get_money()
+                if money:
+                    self.ui.tableWidget.setItem(i, 7, QtGui.QTableWidgetItem(str(money)))
+                if self.new_pwd:
+                    pwd_modify=a.modify_password(self.new_pwd)
+                    if pwd_modify is True:
+                        self.ui.tableWidget.setItem(i, 8, QtGui.QTableWidgetItem(u"修改密码成功"))
+                    else:
+                        self.ui.tableWidget.setItem(i, 8, QtGui.QTableWidgetItem(pwd_modify))
+            else:
+                if login_re["code"]==2 :
+                    self.dirty = True
+                    self.ip_lock.release_read()
+                    # self.ui.tableWidget.setItem(i, 2, QtGui.QTableWidgetItem(login_re["msg"]))
+                    self.logining(i)
+                    return
+                self.ui.tableWidget.setItem(i,2,QtGui.QTableWidgetItem(login_re["msg"]))
+        finally:
+            self.ip_lock.release_read()
 
     @QtCore.pyqtSlot()
     def stop(self):
